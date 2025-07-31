@@ -5,6 +5,8 @@ import {
   INodeTypeDescription,
   NodeConnectionType,
   IRequestOptions,
+	NodeOperationError,
+	NodeApiError,
 } from 'n8n-workflow';
 
 // Define interfaces for Nylas API request bodies for type safety
@@ -220,19 +222,55 @@ export class Nylas implements INodeType {
       },
       // --- Email Send Message Parameters ---
       {
-        displayName: 'To Recipients',
-        name: 'to',
-        type: 'json',
-        default: '[{"email": ""}]',
-        required: true,
-        displayOptions: {
-          show: {
-            resource: ['email'],
-            operation: ['sendMessage'],
-          },
-        },
-        description: 'JSON array of recipient objects (e.g., [{"email": "john.doe@example.com"}])',
-      },
+				displayName: 'Recipients',
+				name: 'recipients',
+				type: 'fixedCollection',
+				typeOptions: {
+					multipleValues: true,
+					sortable: true,
+				},
+				default: {
+					recipient: [
+						{
+							email: '',
+							name: '',
+						},
+					],
+				},
+				required: true,
+				displayOptions: {
+					show: {
+						resource: ['email'],
+						operation: ['sendMessage'],
+					},
+				},
+				description: 'List of email recipients',
+				options: [
+					{
+						name: 'recipient',
+						displayName: 'Recipient',
+						values: [
+							{
+								displayName: 'Email',
+								name: 'email',
+								type: 'string',
+								required: true,
+								placeholder: 'john@example.com',
+								description: 'Email address of the recipient',
+								default: '',
+							},
+							{
+								displayName: 'Name',
+								name: 'name',
+								type: 'string',
+								placeholder: 'John Doe',
+								description: 'Display name of the recipient (optional)',
+								default: '',
+							},
+						],
+					},
+				],
+			},
       {
         displayName: 'Subject',
         name: 'subject',
@@ -583,33 +621,97 @@ export class Nylas implements INodeType {
           case 'email':
             switch (operation) {
               case 'sendMessage': {
-                const toRecipients = this.getNodeParameter('to', itemIndex) as NylasEmailRecipient[];
-                const subject = this.getNodeParameter('subject', itemIndex) as string;
-                const body = this.getNodeParameter('body', itemIndex) as string;
-                const sendAt = this.getNodeParameter('sendAt', itemIndex, 0) as number;
-                const useDraft = this.getNodeParameter('useDraft', itemIndex, false) as boolean;
+								// Get recipients from the fixedCollection
+								const recipientsData = this.getNodeParameter('recipients', itemIndex, {}) as {
+									recipient?: Array<{ email: string; name?: string }>;
+								};
 
-                const requestBody: NylasEmailSendRequest = {
-                  to: toRecipients,
-                  subject: subject,
-                  body: body,
-                };
-                if (sendAt > 0) {
-                  requestBody.send_at = sendAt;
-                }
-                if (useDraft) {
-                  requestBody.use_draft = true;
-                }
+								const recipientList = recipientsData.recipient || [];
 
-                options = {
-                  method: 'POST',
-                  uri: `${credentials.apiUri}/v3/grants/${grantId}/messages/send`,
-                  body: requestBody,
-                  json: true,
-                };
-                responseData = await this.helpers.requestWithAuthentication.call(this, 'nylasApi', options);
-                break;
-              }
+								// Validate recipients
+								if (recipientList.length === 0) {
+									throw new NodeOperationError(this.getNode(), 'At least one recipient is required');
+								}
+
+								const toRecipients: NylasEmailRecipient[] = [];
+
+								for (let i = 0; i < recipientList.length; i++) {
+									const recipient = recipientList[i];
+
+									if (!recipient.email || recipient.email.trim() === '') {
+										throw new NodeOperationError(this.getNode(), `Recipient ${i + 1}: Email address is required`);
+									}
+
+									// Validate email format (basic validation)
+									const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+									if (!emailRegex.test(recipient.email.trim())) {
+										throw new NodeOperationError(this.getNode(), `Recipient ${i + 1}: Invalid email format - ${recipient.email}`);
+									}
+
+									const recipientObj: NylasEmailRecipient = {
+										email: recipient.email.trim(),
+									};
+
+									// Add name if provided
+									if (recipient.name && recipient.name.trim()) {
+										recipientObj.name = recipient.name.trim();
+									}
+
+									toRecipients.push(recipientObj);
+								}
+
+								const subject = this.getNodeParameter('subject', itemIndex) as string;
+								const body = this.getNodeParameter('body', itemIndex) as string;
+								const sendAt = this.getNodeParameter('sendAt', itemIndex, 0) as number;
+								const useDraft = this.getNodeParameter('useDraft', itemIndex, false) as boolean;
+
+								// Validate required fields
+								if (!subject.trim()) {
+									throw new NodeOperationError(this.getNode(), 'Subject cannot be empty');
+								}
+								if (!body.trim()) {
+									throw new NodeOperationError(this.getNode(), 'Body cannot be empty');
+								}
+
+								const requestBody: NylasEmailSendRequest = {
+									to: toRecipients,
+									subject: subject.trim(),
+									body: body,
+								};
+
+								// Add optional parameters only if they have valid values
+								if (sendAt > 0) {
+									requestBody.send_at = sendAt;
+								}
+								if (useDraft) {
+									requestBody.use_draft = useDraft;
+								}
+
+								options = {
+									method: 'POST',
+									uri: `${credentials.apiUri}/v3/grants/${grantId}/messages/send`,
+									body: requestBody,
+									json: true,
+									headers: {
+										'Content-Type': 'application/json',
+									},
+								};
+
+								try {
+									responseData = await this.helpers.requestWithAuthentication.call(this, 'nylasApi', options);
+								} catch (error: any) {
+									// Use NodeApiError for API-related errors
+									const errorMessage = error.response?.body?.message || error.message || 'Unknown error occurred';
+									const statusCode = error.response?.statusCode;
+
+									throw new NodeApiError(this.getNode(), error, {
+										message: `Nylas API Error: ${errorMessage}`,
+										httpCode: statusCode,
+										description: 'Failed to send email via Nylas API',
+									});
+								}
+								break;
+							}
               case 'listMessages': {
                 const limit = this.getNodeParameter('limit', itemIndex, 50) as number;
                 const subjectFilter = this.getNodeParameter('subjectFilter', itemIndex, '') as string;

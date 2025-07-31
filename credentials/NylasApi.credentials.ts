@@ -7,6 +7,7 @@ export class NylasApi implements ICredentialType {
   name = 'nylasApi';
   displayName = 'Nylas API';
   documentationUrl = 'https://docs.n8n.io/integrations/builtin/credentials/nylas/';
+  icon: ICredentialType['icon'] = 'file:../nodes/Nylas/nylas.svg';
   properties: INodeProperties[] = [
     {
       displayName: 'Access Token',

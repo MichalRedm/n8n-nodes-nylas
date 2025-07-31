@@ -21,9 +21,26 @@ export class NylasApi implements ICredentialType {
       displayName: 'API URI',
       name: 'apiUri',
       type: 'string',
-      default: 'https://api.nylas.com',
+      default: 'https://api.us.nylas.com',
       required: true,
-      description: 'The base URI for the Nylas API (e.g., https://api.nylas.com).',
+      description: 'The base URI for the Nylas API (e.g., https://api.us.nylas.com).',
     },
   ];
+
+  authenticate = {
+    type: 'generic' as const,
+    properties: {
+      headers: {
+        Authorization: '=Bearer {{$credentials.accessToken}}',
+      },
+    },
+  };
+
+	test = {
+    request: {
+      baseURL: '={{$credentials.apiUri}}',
+      url: '/v3/applications',
+      method: 'GET' as const,
+    },
+  };
 }

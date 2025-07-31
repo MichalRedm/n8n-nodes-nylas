@@ -1,15 +1,21 @@
 {
-  "name": "n8n-nodes-<...>",
+  "name": "n8n-nodes-nylas",
   "version": "0.1.0",
-  "description": "",
+  "description": "Nylas custom node for n8n to automate email, calendar, and contacts.",
   "keywords": [
-    "n8n-community-node-package"
+    "n8n-community-node-package",
+    "n8n",
+    "nylas",
+    "email",
+    "calendar",
+    "contacts",
+    "automation"
   ],
   "license": "MIT",
   "homepage": "",
   "author": {
-    "name": "",
-    "email": ""
+    "name": "Michał Redmer",
+    "email": "michal.redm@gmail.com"
   },
   "repository": {
     "type": "git",
@@ -33,12 +39,10 @@
   "n8n": {
     "n8nNodesApiVersion": 1,
     "credentials": [
-      "dist/credentials/ExampleCredentialsApi.credentials.js",
-      "dist/credentials/HttpBinApi.credentials.js"
+      "dist/credentials/NylasApi.credentials.js"
     ],
     "nodes": [
-      "dist/nodes/ExampleNode/ExampleNode.node.js",
-      "dist/nodes/HttpBin/HttpBin.node.js"
+      "dist/nodes/Nylas/Nylas.node.js"
     ]
   },
   "devDependencies": {

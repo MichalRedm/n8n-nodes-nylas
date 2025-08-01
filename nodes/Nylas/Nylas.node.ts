@@ -303,32 +303,170 @@ export class Nylas implements INodeType {
         description: 'The main content of the email message',
       },
       {
-        displayName: 'Scheduled Send (Unix Timestamp)',
-        name: 'sendAt',
-        type: 'number',
-        default: 0,
-        placeholder: 'e.g., 1719105508',
-        displayOptions: {
-          show: {
-            resource: ['email'],
-            operation: ['sendMessage'],
+				displayName: 'Additional Parameters',
+				name: 'additionalParameters',
+				type: 'collection',
+				default: {},
+				placeholder: 'Add Parameter',
+        options: [
+          {
+            displayName: 'Attachments',
+            name: 'attachments',
+            type: 'fixedCollection',
+            typeOptions: {
+              multipleValues: true,
+            },
+            options: [
+              {
+                name: 'file',
+                displayName: 'File',
+                values: [
+                  {
+                    displayName: 'File Name',
+                    name: 'filename',
+                    type: 'string',
+                    default: '',
+                  },
+                  {
+                    displayName: 'File Content',
+                    name: 'data',
+                    type: 'string',
+                    default: '',
+                    description: 'The Base64 encoded content of the file',
+                  },
+                  {
+                    displayName: 'Content Type',
+                    name: 'contentType',
+                    type: 'string',
+                    default: '',
+                    description: 'The MIME type of the file',
+                  },
+                ],
+              },
+            ],
+            default: {},
+            description: 'Attach files to the email',
           },
-        },
-        description: 'Optional: Unix timestamp (in seconds) for when to send the email. Set to 0 for immediate send.',
-      },
-      {
-        displayName: 'Use Draft',
-        name: 'useDraft',
-        type: 'boolean',
-        default: false,
-        displayOptions: {
-          show: {
-            resource: ['email'],
-            operation: ['sendMessage'],
+          {
+            displayName: 'BCC',
+            name: 'bcc',
+            type: 'fixedCollection',
+            typeOptions: {
+              multipleValues: true,
+            },
+            options: [
+              {
+                name: 'emailAddress',
+                displayName: 'Email Address',
+                values: [
+                  {
+                    displayName: 'Name',
+                    name: 'name',
+                    type: 'string',
+                    default: '',
+                    placeholder: 'John Doe',
+                  },
+                  {
+                    displayName: 'Email',
+                    name: 'email',
+                    type: 'string',
+                    default: '',
+                    placeholder: 'john.doe@example.com',
+                  },
+                ],
+              },
+            ],
+            default: {},
+            description: 'Blind carbon copy recipients',
           },
-        },
-        description: 'Whether the message is saved as a draft on the provider (Google/Microsoft only) until the scheduled send time',
-      },
+          {
+            displayName: 'CC',
+            name: 'cc',
+            type: 'fixedCollection',
+            typeOptions: {
+              multipleValues: true,
+            },
+            options: [
+              {
+                name: 'emailAddress',
+                displayName: 'Email Address',
+                values: [
+                  {
+                    displayName: 'Name',
+                    name: 'name',
+                    type: 'string',
+                    default: '',
+                    placeholder: 'John Doe',
+                  },
+                  {
+                    displayName: 'Email',
+                    name: 'email',
+                    type: 'string',
+                    default: '',
+                    placeholder: 'john.doe@example.com',
+                  },
+                ],
+              },
+            ],
+            default: {},
+            description: 'Carbon copy recipients',
+          },
+          {
+            displayName: 'From',
+            name: 'from',
+            type: 'fixedCollection',
+            typeOptions: {
+              multipleValues: true,
+            },
+            options: [
+              {
+                name: 'emailAddress',
+                displayName: 'Email Address',
+                values: [
+                  {
+                    displayName: 'Name',
+                    name: 'name',
+                    type: 'string',
+                    default: '',
+                    placeholder: 'Jane Doe',
+                  },
+                  {
+                    displayName: 'Email',
+                    name: 'email',
+                    type: 'string',
+                    default: '',
+                    placeholder: 'jane.doe@example.com',
+                  },
+                ],
+              },
+            ],
+            default: {},
+            description: 'The sender of the email',
+          },
+          {
+            displayName: 'Reply To Message ID',
+            name: 'replyToMessageId',
+            type: 'string',
+            default: '',
+            placeholder: 'message-ID-12345',
+            description: 'The ID of the message to which this email is a reply',
+          },
+          {
+            displayName: 'Send At (Unix Timestamp)',
+            name: 'sendAt',
+            type: 'number',
+            default: '',
+            description: 'The Unix epoch timestamp for scheduling the email to be sent in the future',
+          },
+          {
+            displayName: 'Use Draft',
+            name: 'useDraft',
+            type: 'boolean',
+            default: false,
+            description: 'Whether to use a draft on the provider for scheduled sending',
+          },
+        ],
+			},
       // --- Email List Messages Parameters ---
       {
         displayName: 'Limit',

@@ -120,14 +120,14 @@ export class Nylas implements INodeType {
         },
         options: [
           {
-            name: 'Send Message',
+            name: 'send: message',
             value: 'sendMessage',
-            action: 'Send message via email',
+            action: 'Send a message',
           },
           {
-            name: 'List Messages',
+            name: 'getAll: message',
             value: 'listMessages',
-            action: 'List messages from an email',
+            action: 'Get many messages',
           },
         ],
         default: 'sendMessage',
@@ -147,29 +147,29 @@ export class Nylas implements INodeType {
         },
         options: [
           {
-            name: 'Create Event',
+            name: 'create: event',
             value: 'createEvent',
-            action: 'Create event in a calendar',
+            action: 'Create an event',
           },
           {
-            name: 'Delete Event',
+            name: 'delete: event',
             value: 'deleteEvent',
-            action: 'Delete event from a calendar',
+            action: 'Delete an event',
           },
           {
-            name: 'List Calendars',
+            name: 'getAll: calendar',
             value: 'listCalendars',
             action: 'List calendars',
           },
           {
-            name: 'List Events',
+            name: 'getAll: event',
             value: 'listEvents',
-            action: 'List events from a calendar',
+            action: 'Get many events',
           },
           {
-            name: 'Update Event',
+            name: 'update: event',
             value: 'updateEvent',
-            action: 'Update event from a calendar',
+            action: 'Update an event',
           },
         ],
         default: 'listCalendars',
@@ -189,22 +189,22 @@ export class Nylas implements INodeType {
         },
         options: [
           {
-            name: 'List Contacts',
+            name: 'getAll: contact',
             value: 'listContacts',
             action: 'List contacts',
           },
           {
-            name: 'Create Contact',
+            name: 'create: contact',
             value: 'createContact',
             action: 'Create contact',
           },
           {
-            name: 'Update Contact',
+            name: 'update: contact',
             value: 'updateContact',
             action: 'Update contact',
           },
           {
-            name: 'Delete Contact',
+            name: 'delete: contact',
             value: 'deleteContact',
             action: 'Delete contact',
           },
